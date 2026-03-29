@@ -1,0 +1,33 @@
+# 1. Build artifacts (Rác sau khi compile)
+target/
+*.jar
+*.war
+*.ear
+
+# 2. Sensitive Data (BẢO MẬT - Quan trọng nhất)
+# Bỏ dấu # nếu ông muốn giấu pass DB và mã VNPay
+application.properties
+application-*.properties
+
+# 3. IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# 4. IDE - VS Code
+.vscode/
+
+# 5. Maven Wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# 6. Logs & Temp files
+*.log
+temp/
+
+# 7. OS generated files
+.DS_Store
+Thumbs.db

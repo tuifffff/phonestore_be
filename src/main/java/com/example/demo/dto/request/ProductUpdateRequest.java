@@ -1,0 +1,17 @@
+package com.example.demo.dto.request;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ProductUpdateRequest {
+    String name;         // product_name
+    String description;
+    String image;
+    Integer categoryId;
+    Integer brandId;
+}
