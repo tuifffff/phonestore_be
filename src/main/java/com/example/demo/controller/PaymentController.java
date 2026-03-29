@@ -1,5 +1,5 @@
 package com.example.demo.controller;
-
+import org.springframework.beans.factory.annotation.Value;
 import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.service.OrderService; // Import thêm Service này
 import com.example.demo.service.PaymentService;
@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentController {
-
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
     PaymentService paymentService;
     OrderService orderService; // Thêm dòng này để gọi logic Update
 
@@ -44,7 +45,7 @@ public class PaymentController {
         String orderInfo = request.getParameter("vnp_OrderInfo");
         
         // Base URL của Frontend (Cần đổi theo cổng chạy FE, mặc định Vite là 5173)
-        String frontendUrl = "http://localhost:5173"; 
+
 
         if (paymentStatus == 1) {
             try {
