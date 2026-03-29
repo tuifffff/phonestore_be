@@ -61,12 +61,14 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-
+    @NonFinal // <--- Thêm dòng này để Spring nạp được link từ Render vào
+    @Value("${app.frontend-url:http://localhost:5173}") // Thêm giá trị mặc định sau dấu : cho chắc
+    String frontendUrl;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfig.setAllowedOrigins(java.util.List.of("http://localhost:3000", "http://localhost:5173"));
+                    corsConfig.setAllowedOrigins(java.util.List.of("http://localhost:3000", "http://localhost:5173",frontendUrl));
                     corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     corsConfig.setAllowedHeaders(java.util.List.of("*"));
                     corsConfig.setAllowCredentials(true);
