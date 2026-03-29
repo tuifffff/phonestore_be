@@ -1,4 +1,5 @@
 package com.example.demo.controller;
+import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.service.OrderService; // Import thêm Service này
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentController {
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
     PaymentService paymentService;
     OrderService orderService; // Thêm dòng này để gọi logic Update
 
@@ -37,7 +36,9 @@ public class PaymentController {
                 .message("Tạo link thanh toán VNPay thành công!")
                 .build();
     }
-
+    @Value("${app.frontend-url}")
+    @NonFinal
+    String frontendUrl;
     @GetMapping("/vnpay-return")
     public void paymentReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int paymentStatus = paymentService.orderReturn(request);
