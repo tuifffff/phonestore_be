@@ -34,7 +34,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // 3. Tìm kiếm theo keyword và loại trừ bản thân
     @Query("SELECT u FROM User u WHERE u.username <> :currentAdminUsername AND " +
-            "(u.username LIKE %:keyword% OR u.email LIKE %:keyword% OR u.phoneNumber LIKE %:keyword%)")
+            "(u.username LIKE %:keyword% OR u.email LIKE %:keyword% OR u.phoneNumber LIKE %:keyword% OR u.fullName LIKE %:keyword%)")
     Page<User> searchUsersExcludeSelf(@Param("keyword") String keyword,
                                       @Param("currentAdminUsername") String currentAdminUsername,
                                       Pageable pageable);

@@ -84,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Khách chỉ được XEM sản phẩm
                         .requestMatchers("/api/user/forgot-password/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll() // Khách xem đánh giá
+                        .requestMatchers(HttpMethod.GET, "/api/banners/active").permitAll() // Khách xem banner trang chủ
 
                         // B. Các API chỉ dành cho ADMIN (Phòng hờ nếu quên đặt @PreAuthorize)
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
@@ -93,6 +94,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers("/api/banners/**").hasRole("ADMIN") // Chỉ Admin quản lý banner
                         .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll() // Khách xem hãng máy thoải mái
                         .requestMatchers("/api/statistics/**").hasRole("ADMIN") // Chỉ Admin mới được xem doanh thu
                         .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasRole("USER") // User mới được đánh giá

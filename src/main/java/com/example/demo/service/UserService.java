@@ -73,7 +73,8 @@ public class UserService {
         User user = getCurrentUserEntity();
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setAddress(request.getAddress());
+        user.setFullName(request.getFullName());
+        user.setAvatar(request.getAvatar());
         user.setGender(request.getGender());
         return userMapper.toUserResponse(userRepository.save(user));
     }

@@ -11,7 +11,8 @@ public class UserResponse {
     String username;
     String email;
     String phoneNumber;
-    String address;
+    String fullName;
+    String avatar;
     String gender;
     String roleName;
     // Tuyệt đối không để List<Order> ở đây để tránh vòng lặp!

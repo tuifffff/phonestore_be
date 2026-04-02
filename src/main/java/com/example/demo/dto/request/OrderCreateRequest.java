@@ -2,6 +2,7 @@ package com.example.demo.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class OrderCreateRequest {
@@ -16,4 +17,6 @@ public class OrderCreateRequest {
     private String shippingAddress;
 
     private String note; // Ghi chú (không bắt buộc nên không cần @NotBlank)
+
+    private List<Integer> versionIds; // Danh sách ID các phiên bản sản phẩm muốn thanh toán
 }

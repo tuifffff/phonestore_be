@@ -29,11 +29,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "ORDER BY totalSold DESC")
     List<Object[]> findTopSellingProducts();
     @Query("SELECT o FROM Order o WHERE " +
-            "(:status IS NULL OR o.status = :status) AND " +
+            "((:status1 IS NULL AND :status2 IS NULL) OR (o.status = :status1 OR o.status = :status2)) AND " +
             "(:keyword IS NULL OR CAST(o.orderID AS string) LIKE %:keyword% " +
             "OR o.receiverName LIKE %:keyword% OR o.phoneNumber LIKE %:keyword%)")
     Page<Order> findAllOrdersWithFilter(
-            @Param("status") OrderStatus status,
+            @Param("status1") OrderStatus status1,
+            @Param("status2") OrderStatus status2,
             @Param("keyword") String keyword,
             Pageable pageable
     );

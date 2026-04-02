@@ -27,8 +27,11 @@ public class User {
     @Column(name = "Gender")
     private String gender;
 
-    @Column(name = "Address", columnDefinition = "TEXT")
-    private String address;
+    @Column(name = "FullName", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    private String fullName;
+
+    @Column(name = "Avatar")
+    private String avatar;
 
     @ManyToOne
     @JoinColumn(name = "role_name")

@@ -49,8 +49,17 @@ public class OrderService {
         Cart cart = cartRepository.findByUser_UserID(user.getUserID());
         if (cart == null) throw new RuntimeException("Giỏ hàng chưa có gì cả!");
 
-        List<CartDetails> cartItems = cartDetailsRepository.findByCart_CartID(cart.getCartID());
-        if (cartItems.isEmpty()) throw new RuntimeException("Giỏ hàng đang trống!");
+        List<CartDetails> allCartItems = cartDetailsRepository.findByCart_CartID(cart.getCartID());
+        if (allCartItems.isEmpty()) throw new RuntimeException("Giỏ hàng đang trống!");
+
+        List<CartDetails> cartItems = allCartItems;
+        if (request.getVersionIds() != null && !request.getVersionIds().isEmpty()) {
+            cartItems = allCartItems.stream()
+                    .filter(item -> request.getVersionIds().contains(item.getVersion().getVersionID()))
+                    .toList();
+        }
+
+        if (cartItems.isEmpty()) throw new RuntimeException("Không có sản phẩm nào được chọn để thanh toán!");
 
         // 3. Tạo Hóa Đơn (Bảng Order) bằng Builder
         Order order = Order.builder()
@@ -191,11 +200,14 @@ public class OrderService {
     // 1. Sửa kiểu trả về từ List sang PageResponse
     // Trong OrderService.java
     public PageResponse<OrderResponse> getAllOrdersForAdmin(String status, String keyword, Pageable pageable) {
-        OrderStatus orderStatus = null;
+        OrderStatus status1 = null;
+        OrderStatus status2 = null;
+
         if (status != null && !status.isEmpty()) {
-            orderStatus = OrderStatus.valueOf(status.toUpperCase());
+            status1 = OrderStatus.valueOf(status.toUpperCase());
+            status2 = status1;
         }
-        Page<Order> orderPage = orderRepository.findAllOrdersWithFilter(orderStatus, keyword, pageable);
+        Page<Order> orderPage = orderRepository.findAllOrdersWithFilter(status1, status2, keyword, pageable);
         return PageMapper.toPageResponse(orderPage, orderMapper::toOrderResponse);
     }
     @Transactional
@@ -250,10 +262,13 @@ public class OrderService {
                 .map(orderMapper::toOrderResponse)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
     }
-    public Long countOrdersByStatus(String status) {
+    public long countOrdersByStatus(String status) {
+        if ("PENDING".equalsIgnoreCase(status)) {
+            return orderRepository.countByStatus(OrderStatus.PENDING) +
+                   orderRepository.countByStatus(OrderStatus.PAID);
+        }
         try {
-            OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
-            return orderRepository.countByStatus(orderStatus);
+            return orderRepository.countByStatus(OrderStatus.valueOf(status.toUpperCase()));
         } catch (IllegalArgumentException e) {
             return 0L;
         }
