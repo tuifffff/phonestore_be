@@ -31,6 +31,7 @@ public class ProductController {
 
     ProductService productService;
     CloudinaryService cloudinaryService;
+
     // 1. API lấy toàn bộ danh sách sản phẩm với phân trang, lọc, tìm kiếm, sắp xếp
     @GetMapping
     public ApiResponse<PageResponse<ProductResponse>> getAll(
@@ -41,25 +42,21 @@ public class ProductController {
             @RequestParam(required = false) Boolean inStock,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "productID") String sortBy,
+            @RequestParam(defaultValue = "productID") String sortBy, // Mặc định theo ID
             @RequestParam(defaultValue = "desc") String sortDir) {
 
-        Pageable pageable;
+        // Nếu muốn sắp xếp theo giá, Front-end sẽ gửi sortBy = "versions.price"
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
-        // Nếu sort theo giá → dùng query riêng (không cần Spring Sort)
-        if ("priceAsc".equals(sortBy) || "priceDesc".equals(sortBy)) {
-            pageable = PageRequest.of(page, size); // Không gắn Sort vì query đã ORDER BY
-        } else {
-            Sort sort = sortDir.equalsIgnoreCase("asc")
-                    ? Sort.by(sortBy).ascending()
-                    : Sort.by(sortBy).descending();
-            pageable = PageRequest.of(page, size, sort);
-        }
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .result(productService.getAllProducts(keyword, brandId, minPrice, maxPrice, inStock, sortBy, pageable))
                 .build();
     }
+
     // 2. API thêm mới sản phẩm (chỉ Admin mới được phép truy cập)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')") // Chặn quyền ở mức API
@@ -69,6 +66,7 @@ public class ProductController {
                 .message("Thêm sản phẩm thành công!")
                 .build();
     }
+
     // 3. API cập nhật sản phẩm (chỉ Admin mới được phép truy cập)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,6 +76,7 @@ public class ProductController {
                 .message("Cập nhật sản phẩm thành công!")
                 .build();
     }
+
     // 4. API xóa sản phẩm (chỉ Admin mới được phép truy cập)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -87,6 +86,7 @@ public class ProductController {
                 .message("Đã xóa sản phẩm thành công!")
                 .build();
     }
+
     // 5. API lấy chi tiết sản phẩm theo ID (cả Admin và User đều có thể truy cập)
     @GetMapping("/{id}")
     public ApiResponse<ProductDetailResponse> getProductById(@PathVariable Integer id) {
@@ -94,7 +94,6 @@ public class ProductController {
                 .result(productService.getProductById(id))
                 .build();
     }
-
 
     @PostMapping("/{id}/gallery")
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,9 +1,12 @@
 package com.example.demo.controller;
-
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.service.OrderService; // Import thêm Service này
 import com.example.demo.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,14 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentController {
-
     PaymentService paymentService;
     OrderService orderService; // Thêm dòng này để gọi logic Update
 
@@ -35,34 +36,34 @@ public class PaymentController {
                 .message("Tạo link thanh toán VNPay thành công!")
                 .build();
     }
-
+    @Value("${app.frontend-url}")
+    @NonFinal
+    String frontendUrl;
     @GetMapping("/vnpay-return")
-    public RedirectView paymentReturn(HttpServletRequest request) {
+    public void paymentReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int paymentStatus = paymentService.orderReturn(request);
 
-        // Lấy cái orderInfo ra (Lúc này nó đang chứa ID đơn hàng do ông truyền vào lúc
-        // tạo link)
         String orderInfo = request.getParameter("vnp_OrderInfo");
-        String paymentTime = request.getParameter("vnp_PayDate");
-        String transactionId = request.getParameter("vnp_TransactionNo");
-        String totalPrice = request.getParameter("vnp_Amount");
+        
+        // Base URL của Frontend (Cần đổi theo cổng chạy FE, mặc định Vite là 5173)
+
 
         if (paymentStatus == 1) {
             try {
-                // Ép kiểu cái chuỗi orderInfo thành số Integer (ID đơn hàng)
                 Integer orderId = Integer.parseInt(orderInfo);
-
-                // GỌI LOGIC UPDATE Ở ĐÂY
-                orderService.updatePaymentStatus(orderId, "PAID"); // Cập nhật thành Đã thanh toán
-
-                return new RedirectView("http://localhost:5173/?paymentStatus=success&orderId=" + orderId + "&page=orders");
+                orderService.updatePaymentStatus(orderId, "PAID"); 
+                // Thanh toán thành công, redirect khách về trang lịch sử đơn hàng kèm param success
+                response.sendRedirect(frontendUrl + "?page=orders&paymentStatus=success&orderId=" + orderId);
             } catch (NumberFormatException e) {
-                return new RedirectView("http://localhost:5173/?paymentStatus=error&msg=Lỗi: Mã đơn hàng không hợp lệ!");
+                // Mã đơn hàng sai, redirect kèm lỗi
+                response.sendRedirect(frontendUrl + "?page=orders&paymentStatus=error&msg=InvalidOrder");
             }
         } else if (paymentStatus == 0) {
-            return new RedirectView("http://localhost:5173/?paymentStatus=failed");
+            // Thanh toán phụt (Khách tự hủy, hết tiền, ...)
+            response.sendRedirect(frontendUrl + "?page=orders&paymentStatus=failed");
         } else {
-            return new RedirectView("http://localhost:5173/?paymentStatus=checksum_failed");
+            // Cảnh báo fake dữ liệu chữ ký
+            response.sendRedirect(frontendUrl + "?page=orders&paymentStatus=checksum_failed");
         }
     }
 }
