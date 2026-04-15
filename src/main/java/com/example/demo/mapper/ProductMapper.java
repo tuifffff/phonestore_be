@@ -40,6 +40,8 @@ public interface ProductMapper {
     // --- 3. Entity -> ProductDetailResponse (Trang chi tiết) ---
     @Mapping(target = "id", source = "productID")
     @Mapping(target = "name", source = "productName") // SỬA TẠI ĐÂY: target phải là "name" để khớp với DTO của bạn
+    @Mapping(target = "image", source = "image")
+    @Mapping(target = "minPrice", expression = "java(calculateMinPrice(product))")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "brandName", source = "brand.brandName")
     @Mapping(target = "imageUrls", expression = "java(product.getGallery().stream().map(img -> img.getImageUrl()).toList())")

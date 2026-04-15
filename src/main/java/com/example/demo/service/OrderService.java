@@ -37,6 +37,7 @@ public class OrderService {
     OrderDetailRepository orderDetailRepository;
     VersionRepository versionRepository;
     OrderMapper orderMapper;
+    MembershipService membershipService;
 
     @Transactional
     public OrderResponse placeOrder(String username, OrderCreateRequest request) {
@@ -158,7 +159,14 @@ public class OrderService {
             }
 
             order.setStatus(newStatus);
-            return orderMapper.toOrderResponse(orderRepository.save(order));
+            Order savedOrder = orderRepository.save(order);
+
+            // ── VIP UPGRADE: Khi đơn DELIVERED thì cộng tiền và kiểm tra nâng hạng ──
+            if (newStatus == OrderStatus.DELIVERED) {
+                membershipService.addSpentAndCheckUpgrade(order.getUser(), order.getTotal());
+            }
+
+            return orderMapper.toOrderResponse(savedOrder);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Trạng thái đơn hàng không hợp lệ!");
         }

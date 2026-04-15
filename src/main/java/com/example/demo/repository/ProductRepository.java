@@ -30,7 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             Pageable pageable);
 
     // Query sort giá tăng dần
-    @Query("SELECT p FROM Product p " +
+    @Query(value = "SELECT p FROM Product p " +
             "LEFT JOIN p.versions v " +
             "WHERE (:brandId IS NULL OR p.brand.brandID = :brandId) " +
             "AND (:keyword IS NULL OR LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
@@ -38,7 +38,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "AND (:maxPrice IS NULL OR v.price <= :maxPrice) " +
             "AND (:inStock IS NULL OR (:inStock = true AND v.stock > 0) OR (:inStock = false AND v.stock = 0)) " +
             "GROUP BY p " +
-            "ORDER BY MIN(v.price) ASC")
+            "ORDER BY MIN(v.price) ASC",
+           countQuery = "SELECT COUNT(DISTINCT p) FROM Product p " +
+            "LEFT JOIN p.versions v " +
+            "WHERE (:brandId IS NULL OR p.brand.brandID = :brandId) " +
+            "AND (:keyword IS NULL OR LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:minPrice IS NULL OR v.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR v.price <= :maxPrice) " +
+            "AND (:inStock IS NULL OR (:inStock = true AND v.stock > 0) OR (:inStock = false AND v.stock = 0))")
     Page<Product> searchProductsSortByPriceAsc(
             @Param("brandId") Integer brandId,
             @Param("keyword") String keyword,
@@ -48,7 +55,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             Pageable pageable);
 
     // Query sort giá giảm dần
-    @Query("SELECT p FROM Product p " +
+    @Query(value = "SELECT p FROM Product p " +
             "LEFT JOIN p.versions v " +
             "WHERE (:brandId IS NULL OR p.brand.brandID = :brandId) " +
             "AND (:keyword IS NULL OR LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
@@ -56,7 +63,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "AND (:maxPrice IS NULL OR v.price <= :maxPrice) " +
             "AND (:inStock IS NULL OR (:inStock = true AND v.stock > 0) OR (:inStock = false AND v.stock = 0)) " +
             "GROUP BY p " +
-            "ORDER BY MIN(v.price) DESC")
+            "ORDER BY MIN(v.price) DESC",
+           countQuery = "SELECT COUNT(DISTINCT p) FROM Product p " +
+            "LEFT JOIN p.versions v " +
+            "WHERE (:brandId IS NULL OR p.brand.brandID = :brandId) " +
+            "AND (:keyword IS NULL OR LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:minPrice IS NULL OR v.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR v.price <= :maxPrice) " +
+            "AND (:inStock IS NULL OR (:inStock = true AND v.stock > 0) OR (:inStock = false AND v.stock = 0))")
     Page<Product> searchProductsSortByPriceDesc(
             @Param("brandId") Integer brandId,
             @Param("keyword") String keyword,

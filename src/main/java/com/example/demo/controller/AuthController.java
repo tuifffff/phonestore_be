@@ -7,6 +7,7 @@ import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.dto.response.JwtResponse;
 import com.example.demo.dto.response.UserResponse;
 import com.example.demo.entity.User;
+import com.example.demo.service.MembershipService;
 import com.example.demo.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -17,36 +18,44 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor // Tự động tạo Constructor cho các field 'final'
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true) // Tự thêm 'private final' cho mọi field
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {
 
     AuthenticationManager authenticationManager;
     JwtUtils jwtUtils;
     UserService userService;
+    MembershipService membershipService;
 
     @PostMapping("/login")
     public ApiResponse<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
 
-        // 1. Kiểm tra tài khoản & mật khẩu
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 2. Sinh Token
-
-        // 3. Lấy thông tin User thật
         User user = userService.findByUsername(authentication.getName());
         String jwt = jwtUtils.generateJwtToken(user);
-        // 4. Đóng gói dữ liệu trả về
+
+        // Lấy danh sách permissions từ Role
+        List<String> permissions = (user.getRole() != null && user.getRole().getPermissions() != null)
+                ? user.getRole().getPermissions().stream()
+                      .map(p -> p.getName())
+                      .collect(Collectors.toList())
+                : List.of();
+
         JwtResponse jwtResponse = new JwtResponse(
                 jwt,
-                user.getUserID().intValue(),
+                user.getUserID(),
                 user.getUsername(),
-                user.getRole() != null ? user.getRole().getName() : "USER"
+                user.getRole() != null ? user.getRole().getName() : "USER",
+                permissions
         );
 
         return ApiResponse.<JwtResponse>builder()
@@ -56,8 +65,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<UserResponse> register(@RequestBody RegisterRequest request) {
+        UserResponse response = userService.registerNewUser(request);
+        // Tạo membership mặc định cho user mới
+        User newUser = userService.findByUsername(request.getUsername());
+        membershipService.initMembership(newUser);
         return ApiResponse.<UserResponse>builder()
-                .result(userService.registerNewUser(request))
+                .result(response)
                 .message("Đăng ký thành công!")
                 .build();
     }

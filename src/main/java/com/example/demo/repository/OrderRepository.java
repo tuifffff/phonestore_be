@@ -28,6 +28,25 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "GROUP BY od.version.product.productName " +
             "ORDER BY totalSold DESC")
     List<Object[]> findTopSellingProducts();
+
+    // 3. Doanh thu theo từng tháng trong 1 năm (cho biểu đồ)
+    @Query("SELECT MONTH(o.createdAt), COALESCE(SUM(o.total), 0) " +
+            "FROM Order o " +
+            "WHERE YEAR(o.createdAt) = :year AND o.status = :status " +
+            "GROUP BY MONTH(o.createdAt) " +
+            "ORDER BY MONTH(o.createdAt)")
+    List<Object[]> getYearlyRevenue(@Param("year") int year, @Param("status") OrderStatus status);
+
+    // 4. Doanh thu từng ngày trong 1 tháng (cho biểu đồ ngày)
+    @Query("SELECT DAY(o.createdAt), COALESCE(SUM(o.total), 0) " +
+            "FROM Order o " +
+            "WHERE MONTH(o.createdAt) = :month AND YEAR(o.createdAt) = :year AND o.status = :status " +
+            "GROUP BY DAY(o.createdAt) " +
+            "ORDER BY DAY(o.createdAt)")
+    List<Object[]> getDailyRevenue(@Param("month") int month,
+                                   @Param("year") int year,
+                                   @Param("status") OrderStatus status);
+
     @Query("SELECT o FROM Order o WHERE " +
             "((:status1 IS NULL AND :status2 IS NULL) OR (o.status = :status1 OR o.status = :status2)) AND " +
             "(:keyword IS NULL OR CAST(o.orderID AS string) LIKE %:keyword% " +

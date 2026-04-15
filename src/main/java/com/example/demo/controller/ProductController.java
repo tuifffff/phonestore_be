@@ -2,11 +2,13 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.request.ProductCreateRequest;
 import com.example.demo.dto.request.ProductUpdateRequest;
+import com.example.demo.dto.request.VersionUpdateRequest;
 import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.dto.response.PageResponse;
 import com.example.demo.dto.response.ProductDetailResponse;
 import com.example.demo.dto.response.ProductResponse;
 import com.example.demo.entity.Product;
+import com.example.demo.entity.Version;
 import com.example.demo.service.CloudinaryService;
 import com.example.demo.service.ProductService;
 import lombok.AccessLevel;
@@ -45,12 +47,17 @@ public class ProductController {
             @RequestParam(defaultValue = "productID") String sortBy, // Mặc định theo ID
             @RequestParam(defaultValue = "desc") String sortDir) {
 
-        // Nếu muốn sắp xếp theo giá, Front-end sẽ gửi sortBy = "versions.price"
-        Sort sort = sortDir.equalsIgnoreCase("asc")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable;
+        if ("priceAsc".equals(sortBy) || "priceDesc".equals(sortBy)) {
+            // Nếu muốn sắp xếp theo giá, query JPQL đã hardcode ORDER BY MIN(v.price) ASC/DESC
+            // Nên ta không được truyền Sort vô Pageable để tránh lỗi PropertyReferenceException
+            pageable = PageRequest.of(page, size);
+        } else {
+            Sort sort = sortDir.equalsIgnoreCase("asc")
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+            pageable = PageRequest.of(page, size, sort);
+        }
 
         return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .result(productService.getAllProducts(keyword, brandId, minPrice, maxPrice, inStock, sortBy, pageable))
@@ -115,6 +122,18 @@ public class ProductController {
         return ApiResponse.<List<String>>builder()
                 .result(imageUrls)
                 .message("Đã thêm bộ sưu tập ảnh 360 độ cho máy!")
+                .build();
+    }
+
+    // 7. API cập nhật thông tin version (giá, kho, màu, bộ nhớ)
+    @PatchMapping("/versions/{versionId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Version> updateVersion(
+            @PathVariable Integer versionId,
+            @RequestBody VersionUpdateRequest request) {
+        return ApiResponse.<Version>builder()
+                .result(productService.updateVersion(versionId, request))
+                .message("Cập nhật phiên bản thành công!")
                 .build();
     }
 }
