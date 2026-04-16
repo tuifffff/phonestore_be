@@ -38,7 +38,7 @@ The system is built upon a modern Java ecosystem and leverages industry-standard
 
 The database architecture is designed with strict adherence to relational DB normalization to prevent data anomalies while ensuring performant read/write capabilities for the e-commerce workload. The schema distinctly separates core domains: Users/Roles (RBAC), Product Catalog (Categories, Products, Multi-variants), and Transactions (Orders, Payments).
 
-![ERD Placeholder](link-to-image)
+![PhoneHub ERD Diagram](image.png)
 
 *Note: The ERD above delineates the relational logic, illustrating foreign key constraints between dynamic product attributes, order schemas, and the overarching security models.*
 
@@ -63,9 +63,8 @@ Comprehensive API documentation, including request payloads, parameters, and exa
 
 > **Instruction:** Import the JSON collection from the link below into your Postman workspace to interact with the endpoints.
 
-[![Postman](https://img.shields.io/badge/Postman-Collection-FF6C37?style=for-the-badge&logo=postman)](link-to-postman-collection)
+[![Postman](https://img.shields.io/badge/Postman-Collection-FF6C37?style=for-the-badge&logo=postman)](https://tuifffff-3187193.postman.co/workspace/Tri%E1%BB%87u's-Workspace~6ebe412c-938a-4667-8ff6-a940cd43d86b/collection/53473175-a989b3aa-700f-4e62-8259-ccb82ee80332?action=share&source=copy-link&creator=53473175)
 
-*(Insert Postman collection public link above)*
 
 ---
 
